@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  web:
+    build: ./web
+    container_name: php-web
+    ports:
+      - "8080:80"
+    env_file:
+      - .env
+    volumes:
+      - ./web/src:/var/www/html
+      - ./web/styles:/var/www/styles
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    container_name: mysql-db2
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    container_name: pma
+    environment:
+      PMA_HOST: db               # MySQLサービス名
+      PMA_USER: ${MYSQL_USER}    # .envに合わせる
+      PMA_PASSWORD: ${MYSQL_PASSWORD}
+      UPLOAD_LIMIT: 256M         # インポート上限（必要に応じて変更）
+      MEMORY_LIMIT: 512M
+      MAX_EXECUTION_TIME: 300
+      PMA_ABSOLUTE_URI: http://localhost:8081/
+      # セキュアCookie用のランダム文字列(任意・推奨)
+      # PHP_MYADMIN_BLOWFISH_SECRET: "16～32文字のランダム"
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+
+volumes:
+  db-data:

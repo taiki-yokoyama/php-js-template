@@ -1,0 +1,8 @@
+# PHP ビルトインの index.php をトップに
+DirectoryIndex index.php
+
+RewriteEngine On
+# 将来ルーティングを増やす場合の基礎（/api/foo → index.php）
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
